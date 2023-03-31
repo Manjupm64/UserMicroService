@@ -3,6 +3,7 @@ package com.lcwd.user.service.controller;
 import com.lcwd.user.service.entity.User;
 import com.lcwd.user.service.service.UserService;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -33,7 +34,8 @@ public class UserController {
 
     @GetMapping("/{userId}")
    // @CircuitBreaker(name ="${spring.application.name}", fallbackMethod = "ratingHotelFallBack")
-    @Retry(name ="${spring.application.name}", fallbackMethod = "ratingHotelFallBack")
+    //@Retry(name ="${spring.application.name}", fallbackMethod = "ratingHotelFallBack")
+    @RateLimiter(name ="${spring.application.name}", fallbackMethod = "ratingHotelFallBack")
     public ResponseEntity<User> getSingleUser(@PathVariable("userId") Long userId){
 
         User user=userService.getUseById(userId);
@@ -41,6 +43,7 @@ public class UserController {
     }
 
     public ResponseEntity<User> ratingHotelFallBack(Long id, Exception ex){
+        ex.printStackTrace();
       //  LOGGER.info("FallBack is executed because service is down: ", ex.getMessage());
         User user = User.builder().email("dummy@gmail.com").name("Dummy").about("This user is created dummy because some service is down").id(141234L).build();
         return new ResponseEntity<>(user, HttpStatus.BAD_REQUEST);
